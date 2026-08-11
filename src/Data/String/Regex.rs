@@ -1,4 +1,3 @@
-pub type Regex = crate::UnknownType;
 
 pub fn Data_String_Regex_regexImpl() -> crate::UnknownType { crate::UnknownType::new(0) }
 pub fn Data_String_Regex_showRegexImpl() -> crate::UnknownType { crate::UnknownType::new(0) }
