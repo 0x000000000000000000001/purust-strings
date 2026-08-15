@@ -21,21 +21,18 @@ rm -rf output .spago .cache ../purust-*/output ../purust-*/.spago ../purust-*/.c
 echo "=== Building project with spago ==="
 spago build || { echo "Spago build failed"; exit 1; }
 
+echo "=== Appending missing FFI stubs ==="
+# No longer append stubs globally, let's keep it here just in case? No, the stubs are for old runner.
+
 echo "=== Generating Rust code with purust ==="
 node ../purust/bin/purust.js --main Test.Main || exit 1
 
 echo "=== Compiling and running Rust test binary ==="
-if [ -d "output/Test.Main" ]; then
-    cd output/Test.Main
-    
-    # Fix Cargo.toml perceus_ptr path
-    if [ -f "Cargo.toml" ]; then
-        sed -i.bak 's|../../../runtime/perceus_ptr|../../../purust/tests/runtime/perceus_ptr|g' Cargo.toml || true
-    fi
-    
+if [ -d "output/purust_output" ]; then
+    cd output/purust_output
     cargo run
 else
-    echo "No output/Test.Main found."
+    echo "No output/purust_output found."
     exit 1
 fi
 echo -e "\n✅ Tests passed successfully!"
