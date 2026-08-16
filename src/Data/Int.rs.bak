@@ -43,20 +43,14 @@ pub fn Data_Int_fromNumberImpl(
     mut nothing: crate::UnknownType,
     mut n: crate::UnknownType,
 ) -> crate::UnknownType {
+    if n.init_number.is_none() {
+        println!("PANIC IN fromNumberImpl! n.init_number is None! tag={:?} vals={:?} init_int={:?} init_string={:?} init_bool={:?}", n.tag, n.vals.is_some(), n.init_int, n.init_string, n.init_bool);
+    }
     let num = n.init_number.unwrap();
     if num.is_finite() && num.fract() == 0.0 && num >= (-2147483648.0) && num <= (2147483647.0) {
         let int_val = num as i64;
-        crate::UnknownType::new(crate::Record_a {
-            tag: "Just",
-            vals: Some(std::rc::Rc::new(vec![crate::mk_int(int_val)])),
-            ..Default::default()
-        })
+        just.call.as_ref().unwrap()(crate::mk_int(int_val))
     } else {
-        eprintln!("fromNumberImpl returning Nothing for num={}", num);
-        crate::UnknownType::new(crate::Record_a {
-            tag: "Nothing",
-            vals: None,
-            ..Default::default()
-        })
+        nothing
     }
 }
