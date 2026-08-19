@@ -1,6 +1,6 @@
 pub fn Data_Int_toStringAs(mut radix_val: crate::UnknownType, mut n_val: crate::UnknownType) -> crate::UnknownType {
-    let radix = radix_val.init_int.unwrap() as u32;
-    let n = n_val.init_int.unwrap();
+    let radix = radix_val.unwrap_int() as u32;
+    let n = n_val.unwrap_int();
     let s = if radix == 16 {
         format!("{:x}", n)
     } else if radix == 10 {
@@ -12,29 +12,29 @@ pub fn Data_Int_toStringAs(mut radix_val: crate::UnknownType, mut n_val: crate::
     } else {
         panic!("Unsupported radix: {}", radix);
     };
-    crate::UnknownType::new(crate::Record_a { init_string: Some(s), ..Default::default() })
+    crate::Value::String(s)
 }
 
 pub fn Data_Int_toNumber(mut n_val: crate::UnknownType) -> crate::UnknownType {
-    let n = n_val.init_int.unwrap();
-    crate::UnknownType::new(crate::Record_a { init_number: Some(n as f64), ..Default::default() })
+    let n = n_val.unwrap_int();
+    crate::Value::Number(n as f64)
 }
 
 pub fn Data_Int_quot(mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_int.unwrap();
-    let b = a1.init_int.unwrap();
+    let a = a0.unwrap_int();
+    let b = a1.unwrap_int();
     crate::mk_int(a / b)
 }
 
 pub fn Data_Int_rem(mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_int.unwrap();
-    let b = a1.init_int.unwrap();
+    let a = a0.unwrap_int();
+    let b = a1.unwrap_int();
     crate::mk_int(a % b)
 }
 
 pub fn Data_Int_pow(mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_int.unwrap();
-    let b = a1.init_int.unwrap();
+    let a = a0.unwrap_int();
+    let b = a1.unwrap_int();
     crate::mk_int(a.pow(b as u32))
 }
 
@@ -43,7 +43,7 @@ pub fn Data_Int_fromNumberImpl(
     mut nothing: crate::UnknownType,
     mut n: crate::UnknownType,
 ) -> crate::UnknownType {
-    let num = n.init_number.unwrap();
+    let num = n.unwrap_number();
     if num.is_finite() && num.fract() == 0.0 && num >= (-2147483648.0) && num <= (2147483647.0) {
         let int_val = num as i64;
         crate::UnknownType::new(crate::Record_a {

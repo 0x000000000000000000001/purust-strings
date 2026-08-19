@@ -1,6 +1,6 @@
 pub fn Data_Ord_ordIntImpl(mut lt: crate::UnknownType, mut eq: crate::UnknownType, mut gt: crate::UnknownType, mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_int.unwrap();
-    let b = a1.init_int.unwrap();
+    let a = a0.unwrap_int();
+    let b = a1.unwrap_int();
     match a.cmp(&b) {
         std::cmp::Ordering::Less => lt,
         std::cmp::Ordering::Equal => eq,
@@ -9,16 +9,16 @@ pub fn Data_Ord_ordIntImpl(mut lt: crate::UnknownType, mut eq: crate::UnknownTyp
 }
 
 pub fn Data_Ord_ordNumberImpl(mut lt: crate::UnknownType, mut eq: crate::UnknownType, mut gt: crate::UnknownType, mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_number.unwrap();
-    let b = a1.init_number.unwrap();
+    let a = a0.unwrap_number();
+    let b = a1.unwrap_number();
     if a < b { lt }
     else if a > b { gt }
     else { eq }
 }
 
 pub fn Data_Ord_ordCharImpl(mut lt: crate::UnknownType, mut eq: crate::UnknownType, mut gt: crate::UnknownType, mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_char.unwrap();
-    let b = a1.init_char.unwrap();
+    let a = a0.unwrap_char();
+    let b = a1.unwrap_char();
     match a.cmp(&b) {
         std::cmp::Ordering::Less => lt,
         std::cmp::Ordering::Equal => eq,
@@ -27,8 +27,8 @@ pub fn Data_Ord_ordCharImpl(mut lt: crate::UnknownType, mut eq: crate::UnknownTy
 }
 
 pub fn Data_Ord_ordStringImpl(mut lt: crate::UnknownType, mut eq: crate::UnknownType, mut gt: crate::UnknownType, mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_string.as_ref().unwrap();
-    let b = a1.init_string.as_ref().unwrap();
+    let a = a0.unwrap_string();
+    let b = a1.unwrap_string();
     match a.cmp(b) {
         std::cmp::Ordering::Less => lt,
         std::cmp::Ordering::Equal => eq,
@@ -37,8 +37,8 @@ pub fn Data_Ord_ordStringImpl(mut lt: crate::UnknownType, mut eq: crate::Unknown
 }
 
 pub fn Data_Ord_ordBooleanImpl(mut lt: crate::UnknownType, mut eq: crate::UnknownType, mut gt: crate::UnknownType, mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let a = a0.init_bool.unwrap();
-    let b = a1.init_bool.unwrap();
+    let a = a0.unwrap_bool();
+    let b = a1.unwrap_bool();
     match a.cmp(&b) {
         std::cmp::Ordering::Less => lt,
         std::cmp::Ordering::Equal => eq,
@@ -47,11 +47,11 @@ pub fn Data_Ord_ordBooleanImpl(mut lt: crate::UnknownType, mut eq: crate::Unknow
 }
 
 pub fn Data_Ord_ordArrayImpl(mut f: crate::UnknownType, mut a0: crate::UnknownType, mut a1: crate::UnknownType) -> crate::UnknownType {
-    let arr1 = a0.init_array.as_ref().unwrap();
-    let arr2 = a1.init_array.as_ref().unwrap();
+    let arr1 = a0.unwrap_array();
+    let arr2 = a1.unwrap_array();
     let len = std::cmp::min(arr1.len(), arr2.len());
     for i in 0..len {
-        let res = f.call.as_ref().unwrap()(arr1[i].clone()).call.as_ref().unwrap()(arr2[i].clone());
+        let res = f.unwrap_func()(arr1[i].clone()).unwrap_func()(arr2[i].clone());
         if res.tag == "LT" {
             return res;
         } else if res.tag == "GT" {

@@ -1,8 +1,8 @@
 // FFI implementation for Data.String.Common in Rust
 
 pub fn Data_String_Common__localeCompare(mut lt: crate::UnknownType, mut eq: crate::UnknownType, mut gt: crate::UnknownType, mut a_val: crate::UnknownType, mut b_val: crate::UnknownType) -> crate::UnknownType {
-    let a = a_val.init_string.as_ref().unwrap();
-    let b = b_val.init_string.as_ref().unwrap();
+    let a = a_val.unwrap_string();
+    let b = b_val.unwrap_string();
     match a.cmp(b) {
         std::cmp::Ordering::Less => lt,
         std::cmp::Ordering::Equal => eq,
@@ -11,58 +11,58 @@ pub fn Data_String_Common__localeCompare(mut lt: crate::UnknownType, mut eq: cra
 }
 
 pub fn Data_String_Common_replace(mut pat_val: crate::UnknownType, mut rep_val: crate::UnknownType, mut s_val: crate::UnknownType) -> crate::UnknownType {
-    let pat = pat_val.init_string.as_ref().unwrap();
-    let rep = rep_val.init_string.as_ref().unwrap();
-    let s = s_val.init_string.as_ref().unwrap();
+    let pat = pat_val.unwrap_string();
+    let rep = rep_val.unwrap_string();
+    let s = s_val.unwrap_string();
     let replaced = s.replacen(pat, rep, 1);
-    crate::UnknownType::new(crate::Record_a { init_string: Some(replaced), ..Default::default() })
+    crate::Value::String(replaced)
 }
 
 pub fn Data_String_Common_replaceAll(mut pat_val: crate::UnknownType, mut rep_val: crate::UnknownType, mut s_val: crate::UnknownType) -> crate::UnknownType {
-    let pat = pat_val.init_string.as_ref().unwrap();
-    let rep = rep_val.init_string.as_ref().unwrap();
-    let s = s_val.init_string.as_ref().unwrap();
+    let pat = pat_val.unwrap_string();
+    let rep = rep_val.unwrap_string();
+    let s = s_val.unwrap_string();
     let replaced = s.replace(pat, rep);
-    crate::UnknownType::new(crate::Record_a { init_string: Some(replaced), ..Default::default() })
+    crate::Value::String(replaced)
 }
 
 pub fn Data_String_Common_split(mut pat_val: crate::UnknownType, mut s_val: crate::UnknownType) -> crate::UnknownType {
-    let pat = pat_val.init_string.as_ref().unwrap();
-    let s = s_val.init_string.as_ref().unwrap();
+    let pat = pat_val.unwrap_string();
+    let s = s_val.unwrap_string();
     let parts: Vec<crate::UnknownType> = if pat.is_empty() {
         if s.is_empty() {
             vec![]
         } else {
-            s.chars().map(|c| crate::UnknownType::new(crate::Record_a { init_string: Some(c.to_string()), ..Default::default() })).collect()
+            s.chars().map(|c| crate::Value::String(c.to_string())).collect()
         }
     } else {
-        s.split(pat).map(|part| crate::UnknownType::new(crate::Record_a { init_string: Some(part.to_string()), ..Default::default() })).collect()
+        s.split(pat).map(|part| crate::Value::String(part.to_string())).collect()
     };
-    crate::UnknownType::new(crate::Record_a { init_array: Some(std::rc::Rc::new(parts)), ..Default::default() })
+    crate::Value::Array(std::rc::Rc::new(parts))
 }
 
 pub fn Data_String_Common_toLower(mut s_val: crate::UnknownType) -> crate::UnknownType {
-    let s = s_val.init_string.as_ref().unwrap();
+    let s = s_val.unwrap_string();
     let lower = s.to_lowercase();
-    crate::UnknownType::new(crate::Record_a { init_string: Some(lower), ..Default::default() })
+    crate::Value::String(lower)
 }
 
 pub fn Data_String_Common_toUpper(mut s_val: crate::UnknownType) -> crate::UnknownType {
-    let s = s_val.init_string.as_ref().unwrap();
+    let s = s_val.unwrap_string();
     let upper = s.to_uppercase();
-    crate::UnknownType::new(crate::Record_a { init_string: Some(upper), ..Default::default() })
+    crate::Value::String(upper)
 }
 
 pub fn Data_String_Common_trim(mut s_val: crate::UnknownType) -> crate::UnknownType {
-    let s = s_val.init_string.as_ref().unwrap();
+    let s = s_val.unwrap_string();
     let trimmed = s.trim().to_string();
-    crate::UnknownType::new(crate::Record_a { init_string: Some(trimmed), ..Default::default() })
+    crate::Value::String(trimmed)
 }
 
 pub fn Data_String_Common_joinWith(mut sep_val: crate::UnknownType, mut arr_val: crate::UnknownType) -> crate::UnknownType {
-    let sep = sep_val.init_string.as_ref().unwrap();
-    let arr = arr_val.init_array.as_ref().unwrap();
-    let strings: Vec<&str> = arr.iter().map(|item| item.init_string.as_ref().unwrap().as_str()).collect();
+    let sep = sep_val.unwrap_string();
+    let arr = arr_val.unwrap_array();
+    let strings: Vec<&str> = arr.iter().map(|item| item.unwrap_string().as_str()).collect();
     let joined = strings.join(sep);
-    crate::UnknownType::new(crate::Record_a { init_string: Some(joined), ..Default::default() })
+    crate::Value::String(joined)
 }
