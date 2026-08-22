@@ -37,19 +37,11 @@ pub fn Data_String_Regex_regexImpl(mut left: crate::UnknownType, mut right: crat
         Ok(_) => {
             let arr = vec![s1.clone(), s2.clone()];
             let regex_repr = crate::Value::Array(Rc::new(arr));
-            crate::UnknownType::new(crate::Record_a {
-                tag: right.tag,
-                vals: Some(Rc::new(vec![regex_repr])),
-                ..Default::default()
-            })
+            right.unwrap_func()(regex_repr)
         },
         Err(e) => {
             let err_msg = crate::Value::String(e.to_string());
-            crate::UnknownType::new(crate::Record_a {
-                tag: left.tag,
-                vals: Some(Rc::new(vec![err_msg])),
-                ..Default::default()
-            })
+            left.unwrap_func()(err_msg)
         }
     }
 }
@@ -71,15 +63,14 @@ pub fn Data_String_Regex_flagsImpl(mut r: crate::UnknownType) -> crate::UnknownT
     let arr = r.unwrap_array();
     let flags = arr[1].unwrap_string();
     
-    crate::UnknownType::new(crate::Record_a {
-        multiline: Some(crate::Value::Bool(flags.contains('m'))),
-        ignoreCase: Some(crate::Value::Bool(flags.contains('i'))),
-        global: Some(crate::Value::Bool(flags.contains('g'))),
-        dotAll: Some(crate::Value::Bool(flags.contains('s'))),
-        sticky: Some(crate::Value::Bool(flags.contains('y'))),
-        unicode: Some(crate::Value::Bool(flags.contains('u'))),
-        ..Default::default()
-    })
+    crate::Value::Record_dotAll_global_ignoreCase_multiline_sticky_unicode(perceus_ptr::PerceusPtr::new(crate::Record_dotAll_global_ignoreCase_multiline_sticky_unicode {
+            dotAll: crate::Value::Bool(flags.contains('s')),
+            global: crate::Value::Bool(flags.contains('g')),
+            ignoreCase: crate::Value::Bool(flags.contains('i')),
+            multiline: crate::Value::Bool(flags.contains('m')),
+            sticky: crate::Value::Bool(flags.contains('y')),
+            unicode: crate::Value::Bool(flags.contains('u')),
+        }))
 }
 
 pub fn Data_String_Regex_test(mut r: crate::UnknownType, mut s: crate::UnknownType) -> crate::UnknownType {
@@ -102,22 +93,14 @@ pub fn Data_String_Regex__match(mut just: crate::UnknownType, mut nothing: crate
             let m = m_res.unwrap();
             let matched_str = m.as_str().to_string();
             let match_val = crate::Value::String(matched_str);
-            crate::UnknownType::new(crate::Record_a {
-                tag: just.tag,
-                vals: Some(Rc::new(vec![match_val])),
-                ..Default::default()
-            })
+            just.unwrap_func()(match_val)
         }).collect();
         
         if matches.is_empty() {
             nothing.clone()
         } else {
             let res_arr = crate::Value::Array(Rc::new(matches));
-            crate::UnknownType::new(crate::Record_a {
-                tag: just.tag,
-                vals: Some(Rc::new(vec![res_arr])),
-                ..Default::default()
-            })
+            just.unwrap_func()(res_arr)
         }
     } else {
         if let Some(caps) = re.captures(target).unwrap() {
@@ -126,21 +109,13 @@ pub fn Data_String_Regex__match(mut just: crate::UnknownType, mut nothing: crate
                 if let Some(m) = m_opt {
                     let matched_str = m.as_str().to_string();
                     let match_val = crate::Value::String(matched_str);
-                    matches.push(crate::UnknownType::new(crate::Record_a {
-                        tag: just.tag,
-                        vals: Some(Rc::new(vec![match_val])),
-                        ..Default::default()
-                    }));
+                    matches.push(just.unwrap_func()(match_val));
                 } else {
                     matches.push(nothing.clone());
                 }
             }
             let res_arr = crate::Value::Array(Rc::new(matches));
-            crate::UnknownType::new(crate::Record_a {
-                tag: just.tag,
-                vals: Some(Rc::new(vec![res_arr])),
-                ..Default::default()
-            })
+            just.unwrap_func()(res_arr)
         } else {
             nothing.clone()
         }
@@ -189,11 +164,7 @@ pub fn Data_String_Regex__replaceBy(mut just: crate::UnknownType, mut nothing: c
             if let Some(g) = caps.get(i) {
                 let g_str = g.as_str().to_string();
                 let g_val = crate::Value::String(g_str);
-                groups.push(crate::UnknownType::new(crate::Record_a {
-                    tag: just.tag,
-                    vals: Some(Rc::new(vec![g_val])),
-                    ..Default::default()
-                }));
+                groups.push(just.unwrap_func()(g_val));
             } else {
                 groups.push(nothing.clone());
             }
@@ -221,11 +192,7 @@ pub fn Data_String_Regex__search(mut just: crate::UnknownType, mut nothing: crat
     if let Some(m) = re.find(target).unwrap() {
         let char_idx = target[..m.start()].chars().count() as i64;
         let int_val = crate::Value::Int(char_idx);
-        crate::UnknownType::new(crate::Record_a {
-            tag: just.tag,
-            vals: Some(Rc::new(vec![int_val])),
-            ..Default::default()
-        })
+        just.unwrap_func()(int_val)
     } else {
         nothing.clone()
     }

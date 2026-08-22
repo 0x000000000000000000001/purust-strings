@@ -16,11 +16,11 @@ pub fn Data_String_CodePoints__codePointAt(mut _fallback: crate::UnknownType, mu
     let s = s_val.unwrap_string();
     if let Some(c) = s.chars().nth(n) {
         let cp = crate::Value::Int(c as u32 as i64);
-        crate::UnknownType::new(crate::Record_a {
-            tag: just.tag,
-            vals: Some(std::rc::Rc::new(vec![cp])),
-            ..Default::default()
-        })
+        just.unwrap_func()(cp)
+
+
+
+
     } else {
         nothing
     }

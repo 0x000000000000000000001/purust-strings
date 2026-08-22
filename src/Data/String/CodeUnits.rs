@@ -8,7 +8,7 @@ pub fn Data_String_CodeUnits__charAt(mut just: crate::UnknownType, mut nothing: 
     if i < s.chars().count() {
         let c = s.chars().nth(i).unwrap();
         let char_val = crate::Value::Char(c);
-        crate::UnknownType::new(crate::Record_a { tag: "Just", vals: Some(std::rc::Rc::new(vec![char_val])), ..Default::default() })
+        just.unwrap_func()(char_val)
     } else {
         nothing
     }
@@ -20,7 +20,7 @@ pub fn Data_String_CodeUnits__indexOf(mut just: crate::UnknownType, mut nothing:
     if let Some(byte_idx) = s.find(x) {
         let char_idx = s[..byte_idx].chars().count() as i64;
         let int_val = crate::Value::Int(char_idx);
-        crate::UnknownType::new(crate::Record_a { tag: "Just", vals: Some(std::rc::Rc::new(vec![int_val])), ..Default::default() })
+        just.unwrap_func()(int_val)
     } else {
         nothing
     }
@@ -44,7 +44,7 @@ pub fn Data_String_CodeUnits__indexOfStartingAt(mut just: crate::UnknownType, mu
         let absolute_byte_idx = byte_idx_opt.unwrap_or(0) + match_byte_idx;
         let char_idx = s[..absolute_byte_idx].chars().count() as i64;
         let int_val = crate::Value::Int(char_idx);
-        crate::UnknownType::new(crate::Record_a { tag: "Just", vals: Some(std::rc::Rc::new(vec![int_val])), ..Default::default() })
+        just.unwrap_func()(int_val)
     } else {
         nothing
     }
@@ -56,7 +56,7 @@ pub fn Data_String_CodeUnits__lastIndexOf(mut just: crate::UnknownType, mut noth
     if let Some(byte_idx) = s.rfind(x) {
         let char_idx = s[..byte_idx].chars().count() as i64;
         let int_val = crate::Value::Int(char_idx);
-        crate::UnknownType::new(crate::Record_a { tag: "Just", vals: Some(std::rc::Rc::new(vec![int_val])), ..Default::default() })
+        just.unwrap_func()(int_val)
     } else {
         nothing
     }
@@ -83,7 +83,7 @@ pub fn Data_String_CodeUnits__lastIndexOfStartingAt(mut just: crate::UnknownType
     
     if let Some(char_idx) = last_match_char_idx {
         let int_val = crate::Value::Int(char_idx as i64);
-        crate::UnknownType::new(crate::Record_a { tag: "Just", vals: Some(std::rc::Rc::new(vec![int_val])), ..Default::default() })
+        just.unwrap_func()(int_val)
     } else {
         nothing
     }
@@ -94,7 +94,7 @@ pub fn Data_String_CodeUnits__toChar(mut just: crate::UnknownType, mut nothing: 
     let chars: Vec<char> = s.chars().collect();
     if chars.len() == 1 {
         let char_val = crate::Value::Char(chars[0]);
-        crate::UnknownType::new(crate::Record_a { tag: "Just", vals: Some(std::rc::Rc::new(vec![char_val])), ..Default::default() })
+        just.unwrap_func()(char_val)
     } else {
         nothing
     }
@@ -165,7 +165,7 @@ pub fn Data_String_CodeUnits_splitAt(mut i_val: crate::UnknownType, mut s_val: c
     let after_str = s.chars().skip(i).collect::<String>();
     let before = crate::Value::String(before_str);
     let after = crate::Value::String(after_str);
-    crate::UnknownType::new(crate::Record_a { before: Some(before), after: Some(after), ..Default::default() })
+    crate::Value::Record_after_before(perceus_ptr::PerceusPtr::new(crate::Record_after_before { after, before }))
 }
 
 pub fn Data_String_CodeUnits_take(mut n_val: crate::UnknownType, mut s_val: crate::UnknownType) -> crate::UnknownType {
