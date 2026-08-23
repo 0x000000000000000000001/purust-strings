@@ -8,7 +8,7 @@ pub fn Data_String_CodeUnits__charAt(mut just: crate::UnknownType, mut nothing: 
     if i < s.chars().count() {
         let c = s.chars().nth(i).unwrap();
         let char_val = crate::Value::Char(c);
-        just.unwrap_func()(char_val)
+        just.unwrap_func1()(char_val)
     } else {
         nothing
     }
@@ -20,7 +20,7 @@ pub fn Data_String_CodeUnits__indexOf(mut just: crate::UnknownType, mut nothing:
     if let Some(byte_idx) = s.find(x) {
         let char_idx = s[..byte_idx].chars().count() as i64;
         let int_val = crate::Value::Int(char_idx);
-        just.unwrap_func()(int_val)
+        just.unwrap_func1()(int_val)
     } else {
         nothing
     }
@@ -44,7 +44,7 @@ pub fn Data_String_CodeUnits__indexOfStartingAt(mut just: crate::UnknownType, mu
         let absolute_byte_idx = byte_idx_opt.unwrap_or(0) + match_byte_idx;
         let char_idx = s[..absolute_byte_idx].chars().count() as i64;
         let int_val = crate::Value::Int(char_idx);
-        just.unwrap_func()(int_val)
+        just.unwrap_func1()(int_val)
     } else {
         nothing
     }
@@ -56,7 +56,7 @@ pub fn Data_String_CodeUnits__lastIndexOf(mut just: crate::UnknownType, mut noth
     if let Some(byte_idx) = s.rfind(x) {
         let char_idx = s[..byte_idx].chars().count() as i64;
         let int_val = crate::Value::Int(char_idx);
-        just.unwrap_func()(int_val)
+        just.unwrap_func1()(int_val)
     } else {
         nothing
     }
@@ -83,7 +83,7 @@ pub fn Data_String_CodeUnits__lastIndexOfStartingAt(mut just: crate::UnknownType
     
     if let Some(char_idx) = last_match_char_idx {
         let int_val = crate::Value::Int(char_idx as i64);
-        just.unwrap_func()(int_val)
+        just.unwrap_func1()(int_val)
     } else {
         nothing
     }
@@ -94,7 +94,7 @@ pub fn Data_String_CodeUnits__toChar(mut just: crate::UnknownType, mut nothing: 
     let chars: Vec<char> = s.chars().collect();
     if chars.len() == 1 {
         let char_val = crate::Value::Char(chars[0]);
-        just.unwrap_func()(char_val)
+        just.unwrap_func1()(char_val)
     } else {
         nothing
     }
@@ -105,7 +105,7 @@ pub fn Data_String_CodeUnits_countPrefix(mut p_val: crate::UnknownType, mut s_va
     let mut count = 0;
     for c in s.chars() {
         let char_val = crate::Value::Char(c);
-        let p_res = p_val.unwrap_func()(char_val);
+        let p_res = p_val.unwrap_func1()(char_val);
         if p_res.unwrap_bool() {
             count += 1;
         } else {

@@ -16,7 +16,7 @@ pub fn Data_String_CodePoints__codePointAt(mut _fallback: crate::UnknownType, mu
     let s = s_val.unwrap_string();
     if let Some(c) = s.chars().nth(n) {
         let cp = crate::Value::Int(c as u32 as i64);
-        just.unwrap_func()(cp)
+        just.unwrap_func1()(cp)
 
 
 
@@ -31,7 +31,7 @@ pub fn Data_String_CodePoints__countPrefix(mut _fallback: crate::UnknownType, mu
     let mut count = 0;
     for c in s.chars() {
         let cp = crate::Value::Int(c as u32 as i64);
-        let is_match = pred.unwrap_func()(cp);
+        let is_match = pred.unwrap_func1()(cp);
         if is_match.unwrap_bool() {
             count += 1;
         } else {
