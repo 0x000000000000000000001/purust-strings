@@ -25,7 +25,7 @@ echo "=== Appending missing FFI stubs ==="
 # No longer append stubs globally, let's keep it here just in case? No, the stubs are for old runner.
 
 echo "=== Generating Rust code with purust ==="
-node ../purust/bin/purust.js --main Test.Main || exit 1
+../purust/bin/purust --main Test.Main || exit 1
 
 echo "=== Compiling and running Rust test binary ==="
 if [ -d "output/purust_output" ]; then
