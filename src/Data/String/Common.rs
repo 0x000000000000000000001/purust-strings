@@ -1,6 +1,6 @@
 // FFI implementation for Data.String.Common in Rust
 
-pub fn Data_String_Common__localeCompare(mut lt: std::rc::Rc<Purs_Data_Ordering::Ordering>, mut eq: std::rc::Rc<Purs_Data_Ordering::Ordering>, mut gt: std::rc::Rc<Purs_Data_Ordering::Ordering>, mut a: String, mut b: String) -> std::rc::Rc<Purs_Data_Ordering::Ordering> {
+pub fn Data_String_Common__localeCompare(mut lt: Purs_Data_Ordering::Ordering, mut eq: Purs_Data_Ordering::Ordering, mut gt: Purs_Data_Ordering::Ordering, mut a: String, mut b: String) -> Purs_Data_Ordering::Ordering {
     match a.cmp(&b) {
         std::cmp::Ordering::Less => lt,
         std::cmp::Ordering::Equal => eq,
@@ -9,14 +9,39 @@ pub fn Data_String_Common__localeCompare(mut lt: std::rc::Rc<Purs_Data_Ordering:
 }
 
 pub fn Data_String_Common_replace(mut pat: String, mut rep: String, mut s: String) -> String {
-    s.replacen(&pat, &rep, 1)
+    replace_literal(&pat, &rep, &s, false)
 }
 
 pub fn Data_String_Common_replaceAll(mut pat: String, mut rep: String, mut s: String) -> String {
-    s.replace(&pat, &rep)
+    replace_literal(&pat, &rep, &s, true)
 }
 
-pub fn Data_String_Common_split(mut pat: String, mut s: String) -> std::rc::Rc<Vec<crate::UnknownType>> {
+// String replacement uses JavaScript's substitution tokens, even without a regex.
+fn replace_literal(pattern: &str, replacement: &str, input: &str, all: bool) -> String {
+    let mut result = String::new();
+    let mut end = 0;
+    for (start, matched) in input.match_indices(pattern) {
+        result.push_str(&input[end..start]);
+        end = start + matched.len();
+        let mut chars = replacement.chars().peekable();
+        while let Some(c) = chars.next() {
+            if c == '$' {
+                match chars.peek().copied() {
+                    Some('$') => { chars.next(); result.push('$'); }
+                    Some('&') => { chars.next(); result.push_str(matched); }
+                    Some('`') => { chars.next(); result.push_str(&input[..start]); }
+                    Some('\'') => { chars.next(); result.push_str(&input[end..]); }
+                    _ => result.push('$'),
+                }
+            } else { result.push(c); }
+        }
+        if !all { break; }
+    }
+    result.push_str(&input[end..]);
+    result
+}
+
+pub fn Data_String_Common_split(mut pat: String, mut s: String) -> crate::UnknownType {
     let parts: Vec<crate::UnknownType> = if pat.is_empty() {
         if s.is_empty() {
             vec![]
@@ -26,22 +51,43 @@ pub fn Data_String_Common_split(mut pat: String, mut s: String) -> std::rc::Rc<V
     } else {
         s.split(&pat).map(|part| crate::Value::String(part.to_string())).collect()
     };
-    std::rc::Rc::new(parts)
+    crate::mk_array(parts)
 }
 
 pub fn Data_String_Common_toLower(mut s: String) -> String {
-    s.to_lowercase()
+    map_unicode_case(&s, str::to_lowercase)
 }
 
 pub fn Data_String_Common_toUpper(mut s: String) -> String {
-    s.to_uppercase()
+    map_unicode_case(&s, str::to_uppercase)
+}
+
+// Transform complete valid runs (for contextual casing), retaining isolated units.
+fn map_unicode_case(input: &str, transform: fn(&str) -> String) -> String {
+    use purust_core::{purust_char_from_code_unit, purust_string_from_utf8, purust_string_to_utf16};
+    let mut result = String::new();
+    let mut run = String::new();
+    for decoded in char::decode_utf16(purust_string_to_utf16(input)) {
+        match decoded {
+            Ok(c) => run.push(c),
+            Err(error) => {
+                result.push_str(&purust_string_from_utf8(&transform(&run)));
+                run.clear();
+                result.push(purust_char_from_code_unit(error.unpaired_surrogate()));
+            }
+        }
+    }
+    result.push_str(&purust_string_from_utf8(&transform(&run)));
+    result
 }
 
 pub fn Data_String_Common_trim(mut s: String) -> String {
-    s.trim().to_string()
+    s.trim_matches(|c| matches!(purust_core::purust_char_to_code_unit(c),
+        0x0009..=0x000d | 0x0020 | 0x00a0 | 0x1680 | 0x2000..=0x200a |
+        0x2028 | 0x2029 | 0x202f | 0x205f | 0x3000 | 0xfeff)).to_owned()
 }
 
-pub fn Data_String_Common_joinWith(mut sep: String, mut arr: std::rc::Rc<Vec<crate::UnknownType>>) -> String {
-    let strings: Vec<String> = arr.iter().map(|item| item.unwrap_string()).collect();
+pub fn Data_String_Common_joinWith(mut sep: String, mut arr: crate::UnknownType) -> String {
+    let strings: Vec<String> = arr.unwrap_array().iter().map(|item| item.unwrap_string()).collect();
     strings.join(&sep)
 }

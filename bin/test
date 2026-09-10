@@ -1,38 +1,66 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 cd "$(dirname "$0")/.."
 
 CLEAN=0
 for arg in "$@"; do
-  if [ "$arg" == "-c" ] || [ "$arg" == "--clean" ]; then
-    CLEAN=1
-  fi
+  case "$arg" in
+    -c|--clean) CLEAN=1 ;;
+    *) echo "Usage: bin/test [-c|--clean]" >&2; exit 2 ;;
+  esac
 done
 
-if [ "$CLEAN" == "1" ]; then
-  COMPILER_DIR="../purust"
-  echo "=== Recompiling ${COMPILER_DIR} ==="
-  (cd "${COMPILER_DIR}" && npm install --silent && npm run build --silent) || { echo "Compiler build failed"; exit 1; }
+COMPILER_DIR="$(cd ../purust && pwd)"
+SPAGO_BIN="$COMPILER_DIR/node_modules/.bin/spago"
+if [ ! -x "$SPAGO_BIN" ]; then
+  printf 'Missing Spago dependency. Run npm install in %s.\n' "$COMPILER_DIR" >&2
+  exit 1
+fi
+if [ "$CLEAN" = 1 ]; then
+  echo "=== Recompiling purust ==="
+  (cd "$COMPILER_DIR" && npm run build)
 fi
 
-# Remove cache for safety
-rm -rf output .spago .cache ../purust-*/output ../purust-*/.spago ../purust-*/.cache
-
-echo "=== Building project with spago ==="
-spago build || { echo "Spago build failed"; exit 1; }
-
-echo "=== Appending missing FFI stubs ==="
-# No longer append stubs globally, let's keep it here just in case? No, the stubs are for old runner.
-
-echo "=== Generating Rust code with purust ==="
-../purust/bin/purust --main Test.Main || exit 1
-
-echo "=== Compiling and running Rust test binary ==="
-if [ -d "output/purust_output" ]; then
-    cd output/purust_output
-    cargo run
+# Prefer the sibling TAST fork; PURS can select another build explicitly.
+if [ -n "${PURS:-}" ]; then
+  PURS_BIN="$(command -v "$PURS")"
 else
-    echo "No output/purust_output found."
-    exit 1
+  FORK_BUILDS=("$COMPILER_DIR"/../../purescript/.stack-work/dist/*/*/build/purs/purs)
+  if [ "${#FORK_BUILDS[@]}" = 1 ] && [ -x "${FORK_BUILDS[0]}" ]; then
+    PURS_BIN="${FORK_BUILDS[0]}"
+  else
+    PURS_BIN="$(command -v purs)"
+  fi
 fi
-echo -e "\n✅ Tests passed successfully!"
+export PATH="$(dirname "$PURS_BIN"):$PATH"
+
+# Clean this package only. Always regenerate its TAST and Rust output.
+rm -rf output
+if [ "$CLEAN" = 1 ]; then
+  rm -rf .spago .cache
+fi
+
+echo "=== Building TAST and generating Rust with spago ==="
+"$SPAGO_BIN" build
+node -e 'const fs = require("node:fs"); const m = JSON.parse(fs.readFileSync("output/Test.Main/corefn.json", "utf8")); if (!Array.isArray(m.dataDecls)) { console.error("A TAST-enabled PureScript fork is required; set PURS to its executable."); process.exit(1); }'
+
+echo "=== Compiling Rust FFI and tests ==="
+cargo build --manifest-path output/purust_output/Cargo.toml
+
+echo "=== Running String tests ==="
+BINARY="output/purust_output/target/debug/purust_output"
+status=0
+node -e 'const { spawnSync } = require("node:child_process"); const result = spawnSync(process.argv[1], [], { stdio: "inherit", timeout: 60000 }); if (result.error) console.error(result.error.message); process.exit(result.status ?? 1);' "$BINARY" > output/actual.stdout 2> output/actual.stderr || status=$?
+cat output/actual.stdout
+if [ "$status" -ne 0 ] || [ -s output/actual.stderr ]; then
+  cat output/actual.stderr >&2
+  echo "[FAILED] String tests exited with status $status" >&2
+  exit 1
+fi
+for suite in Data.String Data.String.CodePoints Data.String.CodeUnits Data.String.Unsafe Data.String.Regex Data.String.CaseInsensitive Data.String.NonEmpty Data.String.NonEmpty.CodeUnits; do
+  if ! grep -Fxq -- "--- $suite ---" output/actual.stdout; then
+    echo "[FAILED] Missing test suite output: $suite" >&2
+    exit 1
+  fi
+done
+echo "Summary: all eight original String test modules passed."
